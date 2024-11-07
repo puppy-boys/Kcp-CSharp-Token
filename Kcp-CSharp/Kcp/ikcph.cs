@@ -68,6 +68,7 @@ namespace KCP
     {
         public IQUEUEHEAD node;
         public uint conv;
+        public uint token;
         public uint cmd;
         public uint frg;
         public uint wnd;
@@ -85,7 +86,7 @@ namespace KCP
     [StructLayout(LayoutKind.Sequential)]
     internal unsafe struct IKCPCB
     {
-        public uint conv, mtu, mss;
+        public uint conv, token, mtu, mss;
         public int state;
         public uint snd_una, snd_nxt, rcv_nxt;
         public uint ssthresh;
@@ -128,7 +129,7 @@ namespace KCP
         public const uint INTERVAL = 100;
         public const uint INTERVAL_MIN = 1;
         public const uint INTERVAL_LIMIT = 5000;
-        public const uint OVERHEAD = 24;
+        public const uint OVERHEAD = 28;
         public const uint DEADLINK = 20;
         public const uint THRESH_INIT = 2;
         public const uint THRESH_MIN = 2;

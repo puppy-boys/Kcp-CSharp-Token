@@ -157,10 +157,11 @@ namespace KCP
             output(data, size);
         }
 
-        public static IKCPCB* ikcp_create(uint conv, ref byte[] buffer)
+        public static IKCPCB* ikcp_create(uint conv, uint token, ref byte[] buffer)
         {
             var kcp = (IKCPCB*)ikcp_malloc(sizeof(IKCPCB));
             kcp->conv = conv;
+            kcp->token = token;
             kcp->snd_una = 0;
             kcp->snd_nxt = 0;
             kcp->rcv_nxt = 0;
@@ -659,13 +660,16 @@ namespace KCP
             var flag = 0;
             while (true)
             {
-                uint ts, sn, len, una, conv;
+                uint ts, sn, len, una, conv, token;
                 ushort wnd;
                 byte cmd, frg;
                 if (size < (int)OVERHEAD)
                     break;
                 data = ikcp_decode32u(data, &conv);
                 if (conv != kcp->conv)
+                    return -1;
+                data = ikcp_decode32u(data, &token);
+                if (token != kcp->token)
                     return -1;
                 data = ikcp_decode8u(data, &cmd);
                 data = ikcp_decode8u(data, &frg);
@@ -720,6 +724,7 @@ namespace KCP
                         {
                             var seg = ikcp_segment_new(kcp, (int)len);
                             seg->conv = conv;
+                            seg->token = token;
                             seg->cmd = cmd;
                             seg->frg = frg;
                             seg->wnd = wnd;
@@ -781,6 +786,7 @@ namespace KCP
         private static byte* ikcp_encode_seg(byte* ptr, IKCPSEG* seg)
         {
             ptr = ikcp_encode32u(ptr, seg->conv);
+            ptr = ikcp_encode32u(ptr, seg->token);
             ptr = ikcp_encode8u(ptr, (byte)seg->cmd);
             ptr = ikcp_encode8u(ptr, (byte)seg->frg);
             ptr = ikcp_encode16u(ptr, (ushort)seg->wnd);
@@ -812,6 +818,7 @@ namespace KCP
                 var lost = 0;
                 IKCPSEG seg;
                 seg.conv = kcp->conv;
+                seg.token = kcp->token;
                 seg.cmd = CMD_ACK;
                 seg.frg = 0;
                 seg.wnd = (uint)ikcp_wnd_unused(kcp);
@@ -901,6 +908,7 @@ namespace KCP
                     kcp->nsnd_que--;
                     kcp->nsnd_buf++;
                     newseg->conv = kcp->conv;
+                    newseg->token = kcp->token;
                     newseg->cmd = CMD_PUSH;
                     newseg->wnd = seg.wnd;
                     newseg->ts = current;

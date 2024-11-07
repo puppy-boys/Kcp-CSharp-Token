@@ -41,7 +41,7 @@ namespace KCP
         ///     Structure
         /// </summary>
         /// <param name="output">Output</param>
-        public Kcp(KcpCallback output) : this(0, output)
+        public Kcp(KcpCallback output) : this(0, 0, output)
         {
         }
 
@@ -49,10 +49,11 @@ namespace KCP
         ///     Structure
         /// </summary>
         /// <param name="conv">ConversationId</param>
+        /// <param name="token">Token</param>
         /// <param name="output">Output</param>
-        public Kcp(uint conv, KcpCallback output)
+        public Kcp(uint conv, uint token, KcpCallback output)
         {
-            _kcp = ikcp_create(conv, ref _buffer);
+            _kcp = ikcp_create(conv, token, ref _buffer);
             _output = output;
         }
 
